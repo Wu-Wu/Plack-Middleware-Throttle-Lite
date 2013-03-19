@@ -59,6 +59,8 @@ __END__
 
 =head2 new
 
+=head2 init
+
 =head2 mk_attrs
 
 =head2 store
