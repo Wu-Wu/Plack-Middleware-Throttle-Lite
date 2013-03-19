@@ -39,6 +39,10 @@ sub mk_attrs {
     }
 }
 
+sub store { Carp::confess 'method \'store\' is not implemented' }
+sub fetch { Carp::confess 'method \'fetch\' is not implemented' }
+sub incr  { Carp::confess 'method \'incr\' is not implemented'  }
+
 1; # End of Plack::Middleware::Throttle::Lite::Backend::Abstract
 
 __END__
@@ -46,8 +50,6 @@ __END__
 =pod
 
 =head1 SYNOPSYS
-
-=head1 DESCRIPTION
 
 =head1 DESCRIPTION
 
@@ -59,8 +61,16 @@ __END__
 
 =head2 mk_attrs
 
+=head2 store
+
+=head2 fetch
+
+=head2 incr
+
 =head1 BUGS
 
 =head1 SEE ALSO
+
+L<Plack::Middleware::Throttle::Lite::Backend::Simple>
 
 =cut
