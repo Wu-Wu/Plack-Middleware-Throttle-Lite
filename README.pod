@@ -66,6 +66,14 @@ Checks if the requester's IP in the blacklist..
 
 Checks if the requester's IP in the whitelist..
 
+=head2 is_allowed
+
+Checks if client is not exceeded limits..
+
+=head2 requester_id
+
+Build unique (as possible) client indentificator..
+
 =head1 BUGS
 
 Please report any bugs or feature requests through the web interface at

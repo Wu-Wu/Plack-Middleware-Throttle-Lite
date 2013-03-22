@@ -11,19 +11,14 @@ use parent 'Plack::Middleware::Throttle::Lite::Backend::Abstract';
 
 my $_storage;
 
-sub store {
-    my ($self, $key) = @_;
-    $_storage->{$key} = 1;
+sub reqs_done {
+    my ($self) = @_;
+    exists $_storage->{$self->cache_key} ? $_storage->{$self->cache_key} : 0;
 }
 
-sub fetch {
-    my ($self, $key) = @_;
-    exists $_storage->{$key} ? $_storage->{$key} : 0;
-}
-
-sub incr {
-    my ($self, $key) = @_;
-    $_storage->{$key}++;
+sub increment {
+    my ($self) = @_;
+    $_storage->{$self->cache_key}++;
 }
 
 1; # End of Plack::Middleware::Throttle::Lite::Backend::Simple
@@ -49,15 +44,11 @@ the Throttle::Lite middleware in your Plack application.
 
 =head1 METHODS
 
-=head2 store
-
-Store value..
-
-=head2 fetch
+=head2 reqs_done
 
 Fetch value..
 
-=head2 incr
+=head2 increment
 
 Increment value..
 

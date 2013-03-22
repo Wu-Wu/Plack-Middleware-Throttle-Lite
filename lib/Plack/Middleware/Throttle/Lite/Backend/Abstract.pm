@@ -39,9 +39,47 @@ sub mk_attrs {
     }
 }
 
-sub store { Carp::confess 'method \'store\' is not implemented' }
-sub fetch { Carp::confess 'method \'fetch\' is not implemented' }
-sub incr  { Carp::confess 'method \'incr\' is not implemented'  }
+sub reqs_done { Carp::confess 'method \'reqs_done\' is not implemented' }
+sub increment { Carp::confess 'method \'increment\' is not implemented' }
+
+__PACKAGE__->mk_attrs(qw(reqs_max requester_id units));
+
+sub settings {
+    my ($self) = @_;
+
+    my $settings = {
+        'req/day'  => {
+            'interval' => 86400,
+            'format'   => '%.4d%.2d%.2d',
+        },
+        'req/hour' => {
+            'interval' => 3600,
+            'format'   => '%.4d%.2d%.2d%.2d',
+        },
+    };
+
+    $settings->{$self->units};
+}
+
+sub expire_in {
+    my ($self) = @_;
+
+    my ($sec, $min) = localtime(time);
+    $self->settings->{'interval'} - (60 * $min + $sec);
+}
+
+sub ymdh {
+    my ($self) = @_;
+
+    my (undef, undef, $hour, $mday, $mon, $year) = localtime(time);
+    sprintf($self->settings->{'format'} => (1900 + $year), (1 + $mon), $mday, $hour);
+}
+
+sub cache_key {
+    my ($self) = @_;
+
+    $self->requester_id . ':' . $self->ymdh
+}
 
 1; # End of Plack::Middleware::Throttle::Lite::Backend::Abstract
 
@@ -63,11 +101,23 @@ __END__
 
 =head2 mk_attrs
 
-=head2 store
+=head2 cache_key
 
-=head2 fetch
+=head2 reqs_done
 
-=head2 incr
+=head2 increment
+
+=head2 expire_in
+
+=head2 reqs_max
+
+=head2 requester_id
+
+=head2 settings
+
+=head2 units
+
+=head2 ymdh
 
 =head1 BUGS
 

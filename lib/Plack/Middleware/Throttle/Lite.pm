@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use feature ':5.10';
 use parent 'Plack::Middleware';
-use Plack::Util::Accessor qw(limits maxreq units backend routes blacklist whitelist def_maxreq def_units def_backend);
+use Plack::Util::Accessor qw(limits maxreq units backend routes blacklist whitelist def_maxreq def_units def_backend privileged);
 use Scalar::Util qw(reftype);
 use List::MoreUtils qw(any);
 use Plack::Util;
@@ -30,6 +30,9 @@ sub prepare_app {
     $self->_normalize_routes;
     $self->blacklist($self->_initialize_accesslist($self->blacklist));
     $self->whitelist($self->_initialize_accesslist($self->whitelist));
+
+    $self->backend->reqs_max($self->maxreq);
+    $self->backend->units($self->units);
 }
 
 #
@@ -40,13 +43,18 @@ sub call {
     my $response;
 
     if ($self->have_to_throttle($env)) {
+
         return $self->reject_request(blacklist => 503) if $self->is_remote_blacklisted($env);
 
-        if ($self->is_remote_whitelisted($env)) {
-            $response = $self->app->($env);
-        } else {
-            $response = $self->is_limits_available($env) ? $self->app->($env) : $self->reject_request(ratelimit => 503);
-        }
+        # update client id
+        $self->backend->requester_id($self->requester_id($env));
+
+        # update
+        $self->privileged($self->is_remote_whitelisted($env));
+
+        $response = $self->is_allowed
+            ? $self->app->($env)
+            : $self->reject_request(ratelimit => 503);
 
         $self->response_cb($response, sub {
             $self->modify_headers(@_);
@@ -156,9 +164,12 @@ sub modify_headers {
     my $headers = $response->[1];
 
     my %info = (
-        Limit => $self->maxreq,
+        Limit => $self->privileged ? 'unlimited' : $self->maxreq,
         Units => $self->units,
+        Used  => $self->backend->reqs_done,
     );
+
+    $info{Expire} = $self->backend->expire_in if ($self->backend->reqs_done >= $self->maxreq) && !$self->privileged;
 
     map { Plack::Util::header_set($headers, 'X-Throttle-Lite-' . $_, $info{$_}) } sort keys %info;
 
@@ -214,9 +225,17 @@ sub _initialize_accesslist {
 
 #
 # Check if limits is not exceeded
-sub is_limits_available {
-    my ($self, $env) = @_;
-    1;
+sub is_allowed {
+    my ($self) = @_;
+
+    if (($self->backend->reqs_done < $self->backend->reqs_max) || $self->privileged) {
+        $self->backend->increment;
+        return $self->privileged
+            ? 1 : $self->backend->reqs_done <= $self->backend->reqs_max ? 1 : 0;
+    }
+    else {
+        return 0;
+    }
 }
 
 #
@@ -289,6 +308,14 @@ Checks if the requester's IP in the blacklist..
 =head2 is_remote_whitelisted
 
 Checks if the requester's IP in the whitelist..
+
+=head2 is_allowed
+
+Checks if client is not exceeded limits..
+
+=head2 requester_id
+
+Build unique (as possible) client indentificator..
 
 =head1 BUGS
 
