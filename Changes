@@ -1,1 +1,4 @@
 Revision history for Perl extension Plack::Middleware::Throttle::Lite.
+
+{{$NEXT}}
+    - initial release
