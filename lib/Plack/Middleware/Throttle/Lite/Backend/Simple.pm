@@ -46,11 +46,11 @@ the Throttle::Lite middleware in your Plack application.
 
 =head2 reqs_done
 
-Fetch value..
+Returns total proceeded requests for current key.
 
 =head2 increment
 
-Increment value..
+Increments total proceeded requests by one for current key.
 
 =head1 SEE ALSO
 
