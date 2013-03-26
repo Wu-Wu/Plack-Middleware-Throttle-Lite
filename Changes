@@ -1,6 +1,7 @@
 Revision history for Perl extension Plack::Middleware::Throttle::Lite.
 
 {{$NEXT}}
+    - in documentation Redis backend mentioned
 
 0.01    Sun Mar 24 09:10:12 2013 +0000
     - initial release
