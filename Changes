@@ -1,6 +1,8 @@
 Revision history for Perl extension Plack::Middleware::Throttle::Lite.
 
 {{$NEXT}}
+    - new configuration option 'header_prefix' added
+    - default values available via single method now
     - in documentation Redis backend mentioned
 
 0.01    Sun Mar 24 09:10:12 2013 +0000

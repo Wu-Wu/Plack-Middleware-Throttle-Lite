@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use feature ':5.10';
 use parent 'Plack::Middleware';
-use Plack::Util::Accessor qw(limits maxreq units backend routes blacklist whitelist defaults privileged);
+use Plack::Util::Accessor qw(limits maxreq units backend routes blacklist whitelist defaults privileged header_prefix);
 use Scalar::Util qw(reftype);
 use List::MoreUtils qw(any);
 use Plack::Util;
@@ -23,12 +23,14 @@ sub prepare_app {
 
     # setting up defaults
     $self->defaults({
-        requests => 199,
-        units    => 'req/hour',
-        backend  => 'Simple',
-        header   => 'Throttle-Lite',
+        requests        => 199,
+        units           => 'req/hour',
+        backend         => 'Simple',
+        header_prefix   => 'Throttle-Lite',
+        username        => 'nobody',
     });
 
+    $self->_normalize_header_prefix;
     $self->_normalize_limits;
     $self->_initialize_backend;
     $self->_normalize_routes;
@@ -86,6 +88,33 @@ sub reject_request {
         [ 'Content-Type' => 'text/plain', ],
         [ $reasons->{$reason} ]
     ];
+}
+
+#
+# Set prefix for headers
+sub _normalize_header_prefix {
+    my ($self) = @_;
+
+    my $prefix = $self->defaults->{header_prefix};
+
+    if ($self->header_prefix) {
+        $prefix = $self->header_prefix;
+
+        # remove invalid chars
+        $prefix =~ s/[^0-9a-zA-Z\s]//g;
+
+        # trim spaces
+        $prefix =~ s/^\s+//g;
+        $prefix =~ s/\s+$//g;
+
+        # camelize
+        $prefix = join '-' => map { ucfirst } split /\s+/, $prefix;
+
+        # set default value in case of empty prefix
+        $prefix = $prefix || $self->defaults->{header_prefix};
+    }
+
+    $self->header_prefix($prefix);
 }
 
 #
@@ -167,6 +196,8 @@ sub modify_headers {
     my ($self, $response) = @_;
     my $headers = $response->[1];
 
+    my $prefix = $self->header_prefix;
+
     my %info = (
         Limit => $self->privileged ? 'unlimited' : $self->maxreq,
         Units => $self->units,
@@ -175,7 +206,7 @@ sub modify_headers {
 
     $info{Expire} = $self->backend->expire_in if ($self->backend->reqs_done >= $self->maxreq) && !$self->privileged;
 
-    map { Plack::Util::header_set($headers, 'X-Throttle-Lite-' . $_, $info{$_}) } sort keys %info;
+    map { Plack::Util::header_set($headers, 'X-' . $prefix . '-' . $_, $info{$_}) } sort keys %info;
 
     $response;
 }
@@ -246,7 +277,7 @@ sub is_allowed {
 # Requester's ID
 sub requester_id {
     my ($self, $env) = @_;
-    join ':' => 'throttle', $env->{REMOTE_ADDR}, ($env->{REMOTE_USER} || 'nobody');
+    join ':' => 'throttle', $env->{REMOTE_ADDR}, ($env->{REMOTE_USER} || $self->defaults->{username});
 }
 
 1; # End of Plack::Middleware::Throttle::Lite
@@ -439,6 +470,21 @@ Rules of configuration IP addresses for whitelist the same as for the L</blackli
 B<Warning!> Whitelist has lower priority than L</blacklist>. Be sure that IP does not exists in blacklist by adding IP
 to whitelist.
 
+=head2 header_prefix
+
+This one allows to change prefix in output headers. A value should be passed as string. It will be normalized before using.
+Any alpha-numeric characters and spaces are allowed. The parts of passed string will be capitalized and joined with a hyphen.
+
+    header_prefix => ' tom di*ck harry  ' # goes to X-Tom-Dick-Harry-Limit, X-Tom-Dick-Harry-Used, ..
+    header_prefix => 'lucky 13'           # ..X-Lucky-13-Limit, X-Lucky-13-Used, ..
+    header_prefix => ''                   # ..X-Throttle-Lite-Limit, X-Throttle-Lite-Used, ..
+    header_prefix => '$ @ # & * /| ; '    # also would be X-Throttle-Lite-Limit, X-Throttle-Lite-Used, ..
+    header_prefix => 'a-b-c'              # ..X-Abc-Limit, X-Abc-Used, ..
+    header_prefix => '2.71828182846'      # ..X-271828182846-Limit, X-271828182846-Used, ..
+
+This option is not required. Default value is B<Throttle-Lite>. Header prefix will be set to the default value in cases of
+specified value won't pass checks.
+
 =head1 METHODS
 
 =head2 prepare_app
@@ -454,6 +500,8 @@ See L<Plack::Middleware>
 Adds extra headers to each throttled response such as maximum requests (B<X-Throttle-Lite-Limit>),
 measuring units (B<X-Throttle-Lite-Units>), requests done (B<X-Throttle-Lite-Used>). If maximum requests is equal to
 requests done B<X-Throttle-Lite-Expire> header will appears.
+
+Headers might be customized by using configuration option L</header_prefix>.
 
 =head2 reject_request
 

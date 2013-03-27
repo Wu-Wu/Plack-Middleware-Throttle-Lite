@@ -192,6 +192,21 @@ Rules of configuration IP addresses for whitelist the same as for the L</blackli
 B<Warning!> Whitelist has lower priority than L</blacklist>. Be sure that IP does not exists in blacklist by adding IP
 to whitelist.
 
+=head2 header_prefix
+
+This one allows to change prefix in output headers. A value should be passed as string. It will be normalized before using.
+Any alpha-numeric characters and spaces are allowed. The parts of passed string will be capitalized and joined with a hyphen.
+
+    header_prefix => ' tom di*ck harry  ' # goes to X-Tom-Dick-Harry-Limit, X-Tom-Dick-Harry-Used, ..
+    header_prefix => 'lucky 13'           # ..X-Lucky-13-Limit, X-Lucky-13-Used, ..
+    header_prefix => ''                   # ..X-Throttle-Lite-Limit, X-Throttle-Lite-Used, ..
+    header_prefix => '$ @ # & * /| ; '    # also would be X-Throttle-Lite-Limit, X-Throttle-Lite-Used, ..
+    header_prefix => 'a-b-c'              # ..X-Abc-Limit, X-Abc-Used, ..
+    header_prefix => '2.71828182846'      # ..X-271828182846-Limit, X-271828182846-Used, ..
+
+This option is not required. Default value is B<Throttle-Lite>. Header prefix will be set to the default value in cases of
+specified value won't pass checks.
+
 =head1 METHODS
 
 =head2 prepare_app
@@ -207,6 +222,8 @@ See L<Plack::Middleware>
 Adds extra headers to each throttled response such as maximum requests (B<X-Throttle-Lite-Limit>),
 measuring units (B<X-Throttle-Lite-Units>), requests done (B<X-Throttle-Lite-Used>). If maximum requests is equal to
 requests done B<X-Throttle-Lite-Expire> header will appears.
+
+Headers might be customized by using configuration option L</header_prefix>.
 
 =head2 reject_request
 
