@@ -6,16 +6,14 @@ use HTTP::Request::Common;
 use Test::More;
 use Plack::Middleware::Throttle::Lite;
 
-can_ok 'Plack::Middleware::Throttle::Lite', qw(prepare_app call limits);
+can_ok 'Plack::Middleware::Throttle::Lite', qw(
+    prepare_app call
+    limits maxreq units backend routes
+    blacklist whitelist defaults privileged
+);
 
 # simple application
-my $app = sub {
-    [
-        200,
-        [ 'Content-Type' => 'text/html' ],
-        [ '<html><body>OK</body></html>' ]
-    ];
-};
+my $app = sub { [ 200, [ 'Content-Type' => 'text/html' ], [ '<html><body>OK</body></html>' ] ] };
 
 #
 # catch exception

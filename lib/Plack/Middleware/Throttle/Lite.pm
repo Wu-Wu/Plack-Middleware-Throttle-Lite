@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use feature ':5.10';
 use parent 'Plack::Middleware';
-use Plack::Util::Accessor qw(limits maxreq units backend routes blacklist whitelist def_maxreq def_units def_backend privileged);
+use Plack::Util::Accessor qw(limits maxreq units backend routes blacklist whitelist defaults privileged);
 use Scalar::Util qw(reftype);
 use List::MoreUtils qw(any);
 use Plack::Util;
@@ -21,9 +21,13 @@ use Net::CIDR::Lite;
 sub prepare_app {
     my ($self) = @_;
 
-    $self->def_maxreq(199);
-    $self->def_units('req/hour');
-    $self->def_backend('Simple');
+    # setting up defaults
+    $self->defaults({
+        requests => 199,
+        units    => 'req/hour',
+        backend  => 'Simple',
+        header   => 'Throttle-Lite',
+    });
 
     $self->_normalize_limits;
     $self->_initialize_backend;
@@ -101,12 +105,12 @@ sub _normalize_limits {
         my $t_limits = lc($self->limits);
         $t_limits =~ s/\s+/ /g;
         $t_limits =~ /$limits_re/;
-        $self->maxreq($+{numreqs} || $self->def_maxreq);
-        $self->units($units->{$+{units}} || $self->def_units)
+        $self->maxreq($+{numreqs} || $self->defaults->{requests});
+        $self->units($units->{$+{units}} || $self->defaults->{units})
     }
     else {
-        $self->maxreq($self->def_maxreq);
-        $self->units($self->def_units)
+        $self->maxreq($self->defaults->{requests});
+        $self->units($self->defaults->{units})
     }
 }
 
@@ -115,7 +119,7 @@ sub _normalize_limits {
 sub _initialize_backend {
     my ($self) = @_;
 
-    my ($class, $args) = ($self->def_backend, {});
+    my ($class, $args) = ($self->defaults->{backend}, {});
 
     if ($self->backend) {
         given (reftype $self->backend) {
