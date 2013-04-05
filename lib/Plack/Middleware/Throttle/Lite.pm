@@ -194,15 +194,17 @@ sub modify_headers {
 
     my $prefix = $self->header_prefix;
 
-    my %info = (
-        Limit => $self->privileged ? 'unlimited' : $self->maxreq,
-        Units => $self->units,
-        Used  => $self->backend->reqs_done,
+    my %inject = (
+        "X-${prefix}-Limit" => $self->privileged ? 'unlimited' : $self->maxreq,
+        "X-${prefix}-Units" => $self->units,
+        "X-${prefix}-Used"  => $self->backend->reqs_done,
     );
 
-    $info{Expire} = $self->backend->expire_in if ($self->backend->reqs_done >= $self->maxreq) && !$self->privileged;
+    if (($self->backend->reqs_done >= $self->maxreq) && !$self->privileged) {
+        $inject{"X-${prefix}-Expire"} = $inject{"Retry-After"} = $self->backend->expire_in;
+    }
 
-    map { Plack::Util::header_set($headers, 'X-' . $prefix . '-' . $_, $info{$_}) } sort keys %info;
+    map { Plack::Util::header_set($headers, $_, $inject{$_}) } sort keys %inject;
 
     $response;
 }
@@ -501,9 +503,9 @@ See L<Plack::Middleware>
 
 Adds extra headers to each throttled response such as maximum requests (B<X-Throttle-Lite-Limit>),
 measuring units (B<X-Throttle-Lite-Units>), requests done (B<X-Throttle-Lite-Used>). If maximum requests is equal to
-requests done B<X-Throttle-Lite-Expire> header will appears.
+requests done B<X-Throttle-Lite-Expire> and B<Retry-After> headers will be injected.
 
-Headers might be customized by using configuration option L</header_prefix>.
+Headers (except of B<Retry-After>) might be customized by using configuration option L</header_prefix>.
 
 =head2 reject_request
 
@@ -539,5 +541,13 @@ L<https://github.com/Wu-Wu/Plack-Middleware-Throttle-Lite/issues>
 L<Plack>
 
 L<Plack::Middleware>
+
+L<RFC 2616|http://tools.ietf.org/html/rfc2616>
+
+Hypertext Transfer Protocol - HTTP/1.1. Section 14.37: C<Retry-After>
+
+L<RFC 6585|http://tools.ietf.org/html/rfc6585>
+
+Additional HTTP Status Codes. Section 4: C<429 Too Many Requests>
 
 =cut

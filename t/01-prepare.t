@@ -57,8 +57,8 @@ my @prepare_tests = (
     (GET '/') => sub {
         is $_->code, 200;
         is $_->content, '<html><body>OK</body></html>';
-        is $_->header('X-Throttle-Lite-Limit'), undef;
-        is $_->header('X-Throttle-Lite-Units'), undef;
+        ok !defined($_->header('X-Throttle-Lite-Limit'));
+        ok !defined($_->header('X-Throttle-Lite-Units'));
     },
     (GET '/api/user/login') => sub {
         is $_->code, 200;
@@ -67,8 +67,8 @@ my @prepare_tests = (
     },
     (GET '/api/host/delete') => sub {
         is $_->code, 200;
-        is $_->header('X-Throttle-Lite-Limit'), undef;
-        is $_->header('X-Throttle-Lite-Units'), undef;
+        ok !defined($_->header('X-Throttle-Lite-Limit'));
+        ok !defined($_->header('X-Throttle-Lite-Units'));
     },
 );
 
