@@ -4,6 +4,7 @@ use Plack::Test;
 use Plack::Builder;
 use HTTP::Request::Common;
 use Test::More;
+use Test::Exception;
 use Plack::Middleware::Throttle::Lite;
 
 can_ok 'Plack::Middleware::Throttle::Lite', qw(
@@ -20,26 +21,26 @@ my $app = sub { [ 200, [ 'Content-Type' => 'text/html' ], [ '<html><body>OK</bod
 # catch exception
 #
 
-eval { $app = builder { enable 'Throttle::Lite', backend => 'Bogus'; $app } };
-like $@, qr|Can't locate Plack.*Bogus\.pm|, 'Unknown non-FQN backend exception';
+throws_ok { $app = builder { enable 'Throttle::Lite', backend => 'Bogus'; $app } }
+    qr|Can't locate Plack.*Bogus\.pm|, 'Unknown non-FQN backend exception';
 
-eval { $app = builder { enable 'Throttle::Lite', backend => [ 'Bogus' => {} ]; $app } };
-like $@, qr|Can't locate Plack.*Bogus\.pm|, 'Unknown non-FQN backend exception with options';
+throws_ok { $app = builder { enable 'Throttle::Lite', backend => [ 'Bogus' => {} ]; $app } }
+    qr|Can't locate Plack.*Bogus\.pm|, 'Unknown non-FQN backend exception with options';
 
-eval { $app = builder { enable 'Throttle::Lite', backend => '+My::Own::Bogus'; $app } };
-like $@, qr|Can't locate My.*Bogus\.pm|, 'Unknown FQN backend exception';
+throws_ok { $app = builder { enable 'Throttle::Lite', backend => '+My::Own::Bogus'; $app } }
+    qr|Can't locate My.*Bogus\.pm|, 'Unknown FQN backend exception';
 
-eval { $app = builder { enable 'Throttle::Lite', backend => { 'Bogus' => {} }; $app } };
-like $@, qr|Expected scalar or array reference|, 'Invalid backend configuration exception (hash ref)';
+throws_ok { $app = builder { enable 'Throttle::Lite', backend => { 'Bogus' => {} }; $app } }
+    qr|Expected scalar or array reference|, 'Invalid backend configuration exception (hash ref)';
 
-eval { $app = builder { enable 'Throttle::Lite', backend => (bless {}, 'Bogus'); $app } };
-like $@, qr|Expected scalar or array reference|, 'Invalid backend configuration exception (blessed ref)';
+throws_ok { $app = builder { enable 'Throttle::Lite', backend => (bless {}, 'Bogus'); $app } }
+    qr|Expected scalar or array reference|, 'Invalid backend configuration exception (blessed ref)';
 
-eval { $app = builder { enable 'Throttle::Lite', routes => {}; $app } };
-like $@, qr|Expected scalar, regex or array reference|, 'Invalid routes configuration exception (hash ref)';
+throws_ok { $app = builder { enable 'Throttle::Lite', routes => {}; $app } }
+    qr|Expected scalar, regex or array reference|, 'Invalid routes configuration exception (hash ref)';
 
-eval { $app = builder { enable 'Throttle::Lite', routes => sub {}; $app } };
-like $@, qr|Expected scalar, regex or array reference|, 'Invalid routes configuration exception (code ref)';
+throws_ok { $app = builder { enable 'Throttle::Lite', routes => sub {}; $app } }
+    qr|Expected scalar, regex or array reference|, 'Invalid routes configuration exception (code ref)';
 
 my $appx = builder {
     enable 'Throttle::Lite',
