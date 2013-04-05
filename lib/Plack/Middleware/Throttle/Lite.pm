@@ -50,7 +50,7 @@ sub call {
 
     if ($self->have_to_throttle($env)) {
 
-        return $self->reject_request(blacklist => 503) if $self->is_remote_blacklisted($env);
+        return $self->reject_request(blacklist => 403) if $self->is_remote_blacklisted($env);
 
         # update client id
         $self->backend->requester_id($self->requester_id($env));
@@ -60,7 +60,7 @@ sub call {
 
         $response = $self->is_allowed
             ? $self->app->($env)
-            : $self->reject_request(ratelimit => 503);
+            : $self->reject_request(ratelimit => 429);
 
         $self->response_cb($response, sub {
             $self->modify_headers(@_);
@@ -79,15 +79,11 @@ sub reject_request {
     my ($self, $reason, $code) = @_;
 
     my $reasons = {
-        blacklist => 'Access from blacklisted IP address cannot be done!',
-        ratelimit => 'Limit exceeded!',
+        blacklist => 'IP Address Blacklisted',
+        ratelimit => 'Rate Limit Exceeded',
     };
 
-    [
-        $code,
-        [ 'Content-Type' => 'text/plain', ],
-        [ $reasons->{$reason} ]
-    ];
+    [ $code, [ 'Content-Type' => 'text/plain', ], [ $reasons->{$reason} ] ];
 }
 
 #
@@ -310,7 +306,7 @@ Implemetation of the middleware inspired by L<Plack::Middleware::Throttle>.
 
 =item Blacklisting
 
-Requests from specified IPs (including ranges) or CIDRs are rejects immediately with response B<503 Service Unavailable>.
+Requests from specified IPs (including ranges) or CIDRs are rejects immediately with response B<403 Forbidden>.
 
 =item Whitelisting
 
@@ -369,6 +365,9 @@ Or even
 
 If this option is omitted, there are some defaults will be assigned. For maximum requests default value will be B<199>
 and measuring units - B<req/hour>. So this option must be set to desired value to have get correct throttling policy.
+
+When a client exceeds rate limit, middleware returns a B<429 Too Many Requests> response with an associated
+C<Rate Limit Exceeded> message in the response body.
 
 =head2 backend
 
@@ -456,6 +455,9 @@ IP addresses can be passed either as string or as list of strings in a different
         ];
 
 More details in L<Net::CIDR::Lite>.
+
+When a client's IP address is in the blacklist, middleware by default returns a B<403 Forbidden> response with an
+associated C<IP Address Blacklisted> message in the response body.
 
 B<Warning!> Blacklist has higher priority than L</whitelist>.
 

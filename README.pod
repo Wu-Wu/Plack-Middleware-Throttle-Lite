@@ -19,7 +19,7 @@ Implemetation of the middleware inspired by L<Plack::Middleware::Throttle>.
 
 =item Blacklisting
 
-Requests from specified IPs (including ranges) or CIDRs are rejects immediately with response B<503 Service Unavailable>.
+Requests from specified IPs (including ranges) or CIDRs are rejects immediately with response B<403 Forbidden>.
 
 =item Whitelisting
 
@@ -91,6 +91,9 @@ Or even
 
 If this option is omitted, there are some defaults will be assigned. For maximum requests default value will be B<199>
 and measuring units - B<req/hour>. So this option must be set to desired value to have get correct throttling policy.
+
+When a client exceeds rate limit, middleware returns a B<429 Too Many Requests> response with an associated
+C<Rate Limit Exceeded> message in the response body.
 
 =head2 backend
 
@@ -178,6 +181,9 @@ IP addresses can be passed either as string or as list of strings in a different
         ];
 
 More details in L<Net::CIDR::Lite>.
+
+When a client's IP address is in the blacklist, middleware by default returns a B<403 Forbidden> response with an
+associated C<IP Address Blacklisted> message in the response body.
 
 B<Warning!> Blacklist has higher priority than L</whitelist>.
 
