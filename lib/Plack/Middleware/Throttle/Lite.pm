@@ -487,7 +487,7 @@ Any alpha-numeric characters and spaces are allowed. The parts of passed string 
     header_prefix => '2.71828182846'      # ..X-271828182846-Limit, X-271828182846-Used, ..
 
 This option is not required. Default value is B<Throttle-Lite>. Header prefix will be set to the default value in cases of
-specified value won't pass checks.
+specified value won't pass checks. This option does not affect the B<Retry-After> response header.
 
 =head1 METHODS
 
