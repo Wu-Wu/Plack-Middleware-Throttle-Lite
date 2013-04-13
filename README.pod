@@ -6,7 +6,7 @@ Plack::Middleware::Throttle::Lite - Requests throttling for Plack
 
 =head1 VERSION
 
-version 0.02
+version 0.03
 
 =head1 DESCRIPTION
 

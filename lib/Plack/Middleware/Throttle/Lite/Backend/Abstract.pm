@@ -210,6 +210,10 @@ Redis-driven storage backend. Take care about memory consumption, has re-connect
 and can use tcp or unix-socket connection to the redis-server. See details
 L<Plack::Middleware::Throttle::Lite::Backend::Redis>.
 
+=head2 Plack::Middleware::Throttle::Lite::Backend::Memcached
+
+Memcached-driven storage backend. See details L<Plack::Middleware::Throttle::Lite::Backend::Memcached>.
+
 =head1 BUGS
 
 Please report any bugs or feature requests through the web interface at
