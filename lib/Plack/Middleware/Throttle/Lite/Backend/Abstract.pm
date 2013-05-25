@@ -5,6 +5,7 @@ package Plack::Middleware::Throttle::Lite::Backend::Abstract;
 use strict;
 use warnings;
 use Carp ();
+use POSIX qw/strftime/;
 
 # VERSION
 # AUTHORITY
@@ -50,11 +51,15 @@ sub settings {
     my $settings = {
         'req/day'  => {
             'interval' => 86400,
-            'format'   => '%.4d%.2d%.2d',
+            'format'   => '%Y%j',
         },
         'req/hour' => {
             'interval' => 3600,
-            'format'   => '%.4d%.2d%.2d%.2d',
+            'format'   => '%Y%j%H',
+        },
+        'req/min'  => {
+            'format'   => '%Y%j%H%M',
+            'interval' => 60,
         },
     };
 
@@ -71,8 +76,7 @@ sub expire_in {
 sub ymdh {
     my ($self) = @_;
 
-    my (undef, undef, $hour, $mday, $mon, $year) = localtime(time);
-    sprintf($self->settings->{'format'} => (1900 + $year), (1 + $mon), $mday, $hour);
+    strftime($self->settings->{'format'} => localtime(time));
 }
 
 sub cache_key {
