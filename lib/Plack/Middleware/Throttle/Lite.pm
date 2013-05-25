@@ -13,6 +13,8 @@ use Plack::Util;
 use Carp ();
 use Net::CIDR::Lite;
 
+no if $] >= 5.018, 'warnings', "experimental::smartmatch";
+
 # VERSION
 # AUTHORITY
 
