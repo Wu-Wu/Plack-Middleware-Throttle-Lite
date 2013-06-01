@@ -69,8 +69,20 @@ sub settings {
 sub expire_in {
     my ($self) = @_;
 
-    my ($sec, $min) = localtime(time);
-    $self->settings->{'interval'} - (60 * $min + $sec);
+    my ($sec, $min, $hour) = localtime(time);
+    my $unit = $self->settings->{'unit'} || 'req/hour';
+
+    my $already_passed;
+    if ($unit eq 'req/day') {
+        $already_passed = 3600 * $hour + 60 * $min + $sec;
+    }
+    elsif ($unit eq 'req/hour') {
+        $already_passed = 60 * $min + $sec;
+    }
+    else {
+        $already_passed = $sec;
+    }
+    $self->settings->{'interval'} - $already_passed;
 }
 
 sub ymdh {
