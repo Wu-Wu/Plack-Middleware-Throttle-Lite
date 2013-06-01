@@ -5,6 +5,7 @@ package Plack::Middleware::Throttle::Lite::Backend::Abstract;
 use strict;
 use warnings;
 use Carp ();
+use POSIX qw/strftime/;
 
 # VERSION
 # AUTHORITY
@@ -50,11 +51,15 @@ sub settings {
     my $settings = {
         'req/day'  => {
             'interval' => 86400,
-            'format'   => '%.4d%.2d%.2d',
+            'format'   => '%Y%j',
         },
         'req/hour' => {
             'interval' => 3600,
-            'format'   => '%.4d%.2d%.2d%.2d',
+            'format'   => '%Y%j%H',
+        },
+        'req/min'  => {
+            'format'   => '%Y%j%H%M',
+            'interval' => 60,
         },
     };
 
@@ -64,15 +69,26 @@ sub settings {
 sub expire_in {
     my ($self) = @_;
 
-    my ($sec, $min) = localtime(time);
-    $self->settings->{'interval'} - (60 * $min + $sec);
+    my ($sec, $min, $hour) = localtime(time);
+    my $unit = $self->settings->{'unit'} || 'req/hour';
+
+    my $already_passed;
+    if ($unit eq 'req/day') {
+        $already_passed = 3600 * $hour + 60 * $min + $sec;
+    }
+    elsif ($unit eq 'req/hour') {
+        $already_passed = 60 * $min + $sec;
+    }
+    else {
+        $already_passed = $sec;
+    }
+    $self->settings->{'interval'} - $already_passed;
 }
 
 sub ymdh {
     my ($self) = @_;
 
-    my (undef, undef, $hour, $mday, $mon, $year) = localtime(time);
-    sprintf($self->settings->{'format'} => (1900 + $year), (1 + $mon), $mday, $hour);
+    strftime($self->settings->{'format'} => localtime(time));
 }
 
 sub cache_key {
