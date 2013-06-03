@@ -1,6 +1,7 @@
 Revision history for Perl extension Plack::Middleware::Throttle::Lite.
 
 {{$NEXT}}
+    - added per-minute throttling (GH#1, thanks Moritz Lenz)
     - in documentation Memcached backend mentioned
 
 0.02    Fri Apr 5 15:43:31 2013 +0000
