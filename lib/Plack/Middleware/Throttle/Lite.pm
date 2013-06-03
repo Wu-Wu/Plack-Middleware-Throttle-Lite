@@ -318,7 +318,7 @@ Requests from specified IPs (including ranges) or CIDRs allows to get an unlimit
 
 =item Flexible and simple throttling policy
 
-Access to an application might be configured on either by hourly or by daily basis.
+Access to an application might be configured by using one of the several time measuring units (minute, hour, day).
 
 =item Routes configuration
 
@@ -536,6 +536,14 @@ Checks if client is not exceeded maximum allowed requests.
 =head2 requester_id
 
 Builds unique (as possible) indentificator of the client based on its IP address and name.
+
+=head1 ACKNOWLEDGEMENTS
+
+=over 4
+
+=item Moritz Lenz (moritz)
+
+=back
 
 =head1 BUGS
 
