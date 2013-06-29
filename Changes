@@ -1,6 +1,8 @@
 Revision history for Perl extension Plack::Middleware::Throttle::Lite.
 
 {{$NEXT}}
+
+0.04    Sat Jun 29 18:04:15 2013 +0000
     - added more tests (measuring units)
     - set min perl version to 5.8.9
 
