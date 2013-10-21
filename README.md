@@ -4,7 +4,7 @@ Plack::Middleware::Throttle::Lite - Requests throttling for Plack
 
 # VERSION
 
-version 0.06
+version 0.05
 
 # DESCRIPTION
 
