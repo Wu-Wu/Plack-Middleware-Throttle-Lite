@@ -1,49 +1,43 @@
-=pod
-
-=head1 NAME
+# NAME
 
 Plack::Middleware::Throttle::Lite - Requests throttling for Plack
 
-=head1 VERSION
+# VERSION
 
-version 0.05
+version 0.06
 
-=head1 DESCRIPTION
+# DESCRIPTION
 
 This middleware allows to restrict access to PSGI application based on requests per unit of time (hour/day at the moment).
-Implemetation of the middleware inspired by L<Plack::Middleware::Throttle>.
+Implemetation of the middleware inspired by [Plack::Middleware::Throttle](http://search.cpan.org/perldoc?Plack::Middleware::Throttle).
 
-=head2 FEATURES
+## FEATURES
 
-=over 4
+- Blacklisting
 
-=item Blacklisting
+    Requests from specified IPs (including ranges) or CIDRs are rejects immediately with response __403 Forbidden__.
 
-Requests from specified IPs (including ranges) or CIDRs are rejects immediately with response B<403 Forbidden>.
+- Whitelisting
 
-=item Whitelisting
+    Requests from specified IPs (including ranges) or CIDRs allows to get an unlimited access to the application.
 
-Requests from specified IPs (including ranges) or CIDRs allows to get an unlimited access to the application.
+- Flexible and simple throttling policy
 
-=item Flexible and simple throttling policy
+    Access to an application might be configured by using one of the several time measuring units (minute, hour, day).
 
-Access to an application might be configured by using one of the several time measuring units (minute, hour, day).
+- Routes configuration
 
-=item Routes configuration
+    Flexible settings for routes matching based on regular expressions.
 
-Flexible settings for routes matching based on regular expressions.
+- Various storage backends
 
-=item Various storage backends
+    There is an API which allows to write and use any database or cache system to manipulate throttling data.
 
-There is an API which allows to write and use any database or cache system to manipulate throttling data.
+- Very lightweight
 
-=item Very lightweight
+    It will not install `a-half-of-CPAN` or `heavy` dependencies!
 
-It will not install C<a-half-of-CPAN> or C<heavy> dependencies!
-
-=back
-
-=head1 SYNOPSYS
+# SYNOPSYS
 
     # inside your app.psgi
     my $app = builder {
@@ -56,12 +50,12 @@ It will not install C<a-half-of-CPAN> or C<heavy> dependencies!
         }
     };
 
-=head1 CONFIGURATION OPTIONS
+# CONFIGURATION OPTIONS
 
-=head2 limits
+## limits
 
 By this option is defined the throttling policy. At the moment, there are two variants in limiting of requests:
-C<per hour>, C<per day> and C<per minute>. Value of maximum requests might be pointed as number and measuring units (hour, day, min).
+`per hour`, `per day` and `per minute`. Value of maximum requests might be pointed as number and measuring units (hour, day, min).
 Some examples:
 
     # restrict to 520 request in an hour
@@ -93,17 +87,17 @@ Or even
     # ..oops! and this one does not work, yet ;-) sorry..
     enable 'Throttle::Lite', limits => '100rph';
 
-If this option is omitted, there are some defaults will be assigned. For maximum requests default value will be B<199>
-and measuring units - B<req/hour>. So this option must be set to desired value to have get correct throttling policy.
+If this option is omitted, there are some defaults will be assigned. For maximum requests default value will be __199__
+and measuring units - __req/hour__. So this option must be set to desired value to have get correct throttling policy.
 
-When a client exceeds rate limit, middleware returns a B<429 Too Many Requests> response with an associated
-C<Rate Limit Exceeded> message in the response body.
+When a client exceeds rate limit, middleware returns a __429 Too Many Requests__ response with an associated
+`Rate Limit Exceeded` message in the response body.
 
-=head2 backend
+## backend
 
 Storage backend and its configuration options. Accepted values either string or list reference contains backend name and
 options as hash reference. Backend name can be pointed in short module name or in fully qualified module name. If
-module name does not belongs to B<Plack::Middleware::Throttle::Lite::Backend> namespace it can be pointed by adding B<+> (plus)
+module name does not belongs to __Plack::Middleware::Throttle::Lite::Backend__ namespace it can be pointed by adding __\+__ (plus)
 sign before name.
 
     # means Plack::Middleware::Throttle::Lite::Backend::Simple
@@ -129,12 +123,12 @@ passed to constructor during initialization.
             '+My::Own::Any' => { server => 'anything.example.com', port => 23250 }
         ];
 
-If no B<backend> specified then will be used in-memory backend L<Plack::Middleware::Throttle::Lite::Backend::Simple>
+If no __backend__ specified then will be used in-memory backend [Plack::Middleware::Throttle::Lite::Backend::Simple](http://search.cpan.org/perldoc?Plack::Middleware::Throttle::Lite::Backend::Simple)
 shipped with this distribution.
 
-=head2 routes
+## routes
 
-URL pattern to match request to throttle. Accepted values are scalar (e.g. C</api>), regex (C<qr{^/(host|item)/search}>)
+URL pattern to match request to throttle. Accepted values are scalar (e.g. `/api`), regex (`qr{^/(host|item)/search}`)
 or a list reference with scalar/regex elements. Below some examples:
 
     # passing routes as scalar..
@@ -157,7 +151,7 @@ or a list reference with scalar/regex elements. Below some examples:
 
 All requests will be passed through (won't be handled by this middleware) if no routes given.
 
-=head2 blacklist
+## blacklist
 
 Blacklist is aimed to restrict some bad guys to have get access to application which uses this middleware.
 IP addresses can be passed either as string or as list of strings in a different forms. It might be simple IP address
@@ -184,25 +178,25 @@ IP addresses can be passed either as string or as list of strings in a different
             '10.104.32.64/29',
         ];
 
-More details in L<Net::CIDR::Lite>.
+More details in [Net::CIDR::Lite](http://search.cpan.org/perldoc?Net::CIDR::Lite).
 
-When a client's IP address is in the blacklist, middleware by default returns a B<403 Forbidden> response with an
-associated C<IP Address Blacklisted> message in the response body.
+When a client's IP address is in the blacklist, middleware by default returns a __403 Forbidden__ response with an
+associated `IP Address Blacklisted` message in the response body.
 
-B<Warning!> Blacklist has higher priority than L</whitelist>.
+__Warning!__ Blacklist has higher priority than ["whitelist"](#whitelist).
 
-=head2 whitelist
+## whitelist
 
 Whitelist is aimed to grant some good guys to have get access to application which uses this middleware. Whitelisted
 client's IP address will receive unlimited access to application. In generated header which is pointed to maximum requests
-for whitelisted guy will be I<unlimited> instead of actually given maximum requests.
+for whitelisted guy will be _unlimited_ instead of actually given maximum requests.
 
-Rules of configuration IP addresses for whitelist the same as for the L</blacklist>.
+Rules of configuration IP addresses for whitelist the same as for the ["blacklist"](#blacklist).
 
-B<Warning!> Whitelist has lower priority than L</blacklist>. Be sure that IP does not exists in blacklist by adding IP
+__Warning!__ Whitelist has lower priority than ["blacklist"](#blacklist). Be sure that IP does not exists in blacklist by adding IP
 to whitelist.
 
-=head2 header_prefix
+## header\_prefix
 
 This one allows to change prefix in output headers. A value should be passed as string. It will be normalized before using.
 Any alpha-numeric characters and spaces are allowed. The parts of passed string will be capitalized and joined with a hyphen.
@@ -214,86 +208,81 @@ Any alpha-numeric characters and spaces are allowed. The parts of passed string 
     header_prefix => 'a-b-c'              # ..X-Abc-Limit, X-Abc-Used, ..
     header_prefix => '2.71828182846'      # ..X-271828182846-Limit, X-271828182846-Used, ..
 
-This option is not required. Default value is B<Throttle-Lite>. Header prefix will be set to the default value in cases of
-specified value won't pass checks. This option does not affect the B<Retry-After> response header.
+This option is not required. Default value is __Throttle-Lite__. Header prefix will be set to the default value in cases of
+specified value won't pass checks. This option does not affect the __Retry-After__ response header.
 
-=head1 METHODS
+# METHODS
 
-=head2 prepare_app
+## prepare\_app
 
-See L<Plack::Middleware>
+See [Plack::Middleware](http://search.cpan.org/perldoc?Plack::Middleware)
 
-=head2 call
+## call
 
-See L<Plack::Middleware>
+See [Plack::Middleware](http://search.cpan.org/perldoc?Plack::Middleware)
 
-=head2 modify_headers
+## modify\_headers
 
-Adds extra headers to each throttled response such as maximum requests (B<X-Throttle-Lite-Limit>),
-measuring units (B<X-Throttle-Lite-Units>), requests done (B<X-Throttle-Lite-Used>). If maximum requests is equal to
-requests done B<X-Throttle-Lite-Expire> and B<Retry-After> headers will be injected.
+Adds extra headers to each throttled response such as maximum requests (__X-Throttle-Lite-Limit__),
+measuring units (__X-Throttle-Lite-Units__), requests done (__X-Throttle-Lite-Used__). If maximum requests is equal to
+requests done __X-Throttle-Lite-Expire__ and __Retry-After__ headers will be injected.
 
-Headers (except of B<Retry-After>) might be customized by using configuration option L</header_prefix>.
+Headers (except of __Retry-After__) might be customized by using configuration option ["header\_prefix"](#header\_prefix).
 
-=head2 reject_request
+## reject\_request
 
 Rejects incoming request with specific code and reason. It might be either request from blacklisted IP or throttled one.
 
-=head2 have_to_throttle
+## have\_to\_throttle
 
-Checks if requested PATH_INFO matches the routes list and should be throttled.
+Checks if requested PATH\_INFO matches the routes list and should be throttled.
 
-=head2 is_remote_blacklisted
+## is\_remote\_blacklisted
 
 Checks if the requester's IP exists in the blacklist.
 
-=head2 is_remote_whitelisted
+## is\_remote\_whitelisted
 
 Checks if the requester's IP exists in the whitelist.
 
-=head2 is_allowed
+## is\_allowed
 
 Checks if client is not exceeded maximum allowed requests.
 
-=head2 requester_id
+## requester\_id
 
 Builds unique (as possible) indentificator of the client based on its IP address and name.
 
-=head1 ACKNOWLEDGEMENTS
+# ACKNOWLEDGEMENTS
 
-=over 4
+- Moritz Lenz (moritz)
 
-=item Moritz Lenz (moritz)
-
-=back
-
-=head1 BUGS
+# BUGS
 
 Please report any bugs or feature requests through the web interface at
-L<https://github.com/Wu-Wu/Plack-Middleware-Throttle-Lite/issues>
+[https://github.com/Wu-Wu/Plack-Middleware-Throttle-Lite/issues](https://github.com/Wu-Wu/Plack-Middleware-Throttle-Lite/issues)
 
-=head1 SEE ALSO
+# SEE ALSO
 
-L<Plack>
+[Plack](http://search.cpan.org/perldoc?Plack)
 
-L<Plack::Middleware>
+[Plack::Middleware](http://search.cpan.org/perldoc?Plack::Middleware)
 
-L<RFC 2616|http://tools.ietf.org/html/rfc2616>
+[RFC 2616](http://tools.ietf.org/html/rfc2616)
 
-Hypertext Transfer Protocol - HTTP/1.1. Section 14.37: C<Retry-After>
+Hypertext Transfer Protocol - HTTP/1.1. Section 14.37: `Retry-After`
 
-L<RFC 6585|http://tools.ietf.org/html/rfc6585>
+[RFC 6585](http://tools.ietf.org/html/rfc6585)
 
-Additional HTTP Status Codes. Section 4: C<429 Too Many Requests>
+Additional HTTP Status Codes. Section 4: `429 Too Many Requests`
 
-=head1 AUTHOR
+# AUTHOR
 
 Anton Gerasimov <chim@cpan.org>
 
-=head1 COPYRIGHT AND LICENSE
+# COPYRIGHT AND LICENSE
 
 This software is copyright (c) 2013 by Anton Gerasimov.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
-
