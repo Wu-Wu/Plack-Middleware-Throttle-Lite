@@ -27,7 +27,7 @@ __END__
 
 =pod
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     # inside your app.psgi
     enable 'Throttle::Lite', backend => 'Simple';

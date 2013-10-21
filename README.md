@@ -6,6 +6,19 @@ Plack::Middleware::Throttle::Lite - Requests throttling for Plack
 
 version 0.05
 
+# SYNOPSIS
+
+    # inside your app.psgi
+    my $app = builder {
+        enable 'Throttle::Lite',
+            limits => '100 req/hour', backend => 'Simple',
+            routes => [ qr{^/(host|item)/search}, qr{^/users/add} ],
+            blacklist => [ '127.0.0.9/32', '10.90.90.90-10.90.90.92', '8.8.8.8', '192.168.0.10/31' ];
+        sub {
+            [ 200, ['Content-Type' => 'text/plain'], [ 'OK' ] ];
+        }
+    };
+
 # DESCRIPTION
 
 This middleware allows to restrict access to PSGI application based on requests per unit of time (hour/day at the moment).
@@ -36,19 +49,6 @@ Implemetation of the middleware inspired by [Plack::Middleware::Throttle](http:/
 - Very lightweight
 
     It will not install `a-half-of-CPAN` or `heavy` dependencies!
-
-# SYNOPSYS
-
-    # inside your app.psgi
-    my $app = builder {
-        enable 'Throttle::Lite',
-            limits => '100 req/hour', backend => 'Simple',
-            routes => [ qr{^/(host|item)/search}, qr{^/users/add} ],
-            blacklist => [ '127.0.0.9/32', '10.90.90.90-10.90.90.92', '8.8.8.8', '192.168.0.10/31' ];
-        sub {
-            [ 200, ['Content-Type' => 'text/plain'], [ 'OK' ] ];
-        }
-    };
 
 # CONFIGURATION OPTIONS
 
