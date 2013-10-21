@@ -11,6 +11,7 @@ perl:
 
 before_install:
     - "cpanm -q -n Dist::Zilla::PluginBundle::Author::CHIM"
+    - "cpanm -q -n Test::Pod::Coverage"
 
 install:
     - "dzil authordeps --missing | xargs cpanm -q -n && dzil listdeps --missing | xargs cpanm -q -n"
