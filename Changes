@@ -12,6 +12,7 @@ Revision history for Perl extension Plack::Middleware::Throttle::Lite.
 
     [ TESTS ]
     - added generic backend tests
+    - added testing against routes
 
 0.04    Sat Jun 29 18:04:15 2013 +0000
 
