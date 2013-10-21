@@ -10,11 +10,13 @@ perl:
 #    - "5.8"
 
 before_install:
-    - "cpanm -q -n Dist::Zilla::PluginBundle::Author::CHIM"
-    - "cpanm -q -n Test::Pod::Coverage"
+    - unset PERL_CPANM_OPT
+    - "cpanm --mirror http://cpan.stratopan.com -q -n Dist::Zilla"
+    - "cpanm --mirror http://cpan.stratopan.com -q -n Dist::Zilla::PluginBundle::Author::CHIM"
+    - "cpanm --mirror http://cpan.stratopan.com -q -n Test::Pod::Coverage"
 
 install:
-    - "dzil authordeps --missing | xargs cpanm -q -n && dzil listdeps --missing | xargs cpanm -q -n"
+    - "dzil authordeps --missing | xargs cpanm --mirror http://cpan.stratopan.com -q -n && dzil listdeps --missing | xargs cpanm --mirror http://cpan.stratopan.com -q -n"
 
 script:
     - "TRAVIS_CI_ORG_BUILD=1 dzil test --release"
