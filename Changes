@@ -10,6 +10,9 @@ Revision history for Perl extension Plack::Middleware::Throttle::Lite.
     - expire_in() wrongly calcs seconds to reset limits (GH#2)
       Reported by github:shieldui.
 
+    [ TESTS ]
+    - added generic backend tests
+
 0.04    Sat Jun 29 18:04:15 2013 +0000
 
     [ FEATURES ]
