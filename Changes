@@ -5,6 +5,8 @@ Revision history for Perl extension Plack::Middleware::Throttle::Lite.
     [ FEATURES ]
     - Changes file using sections now.
     - Github repo uses markdown README file instead of POD.
+    - Stop using Scalar::Util::reftype() due to error result for regexes
+      in perls v5.8 & v5.10
 
     [ FIXES ]
     - expire_in() wrongly calcs seconds to reset limits (GH#2)

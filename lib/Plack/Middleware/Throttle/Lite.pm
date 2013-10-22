@@ -6,7 +6,6 @@ use strict;
 use warnings;
 use parent 'Plack::Middleware';
 use Plack::Util::Accessor qw(limits maxreq units backend routes blacklist whitelist defaults privileged header_prefix);
-use Scalar::Util qw(reftype);
 use List::MoreUtils qw(any);
 use Plack::Util;
 use Carp ();
@@ -146,8 +145,8 @@ sub _initialize_backend {
     my ($class, $args) = ($self->defaults->{backend}, {});
 
     if ($self->backend) {
-        my $reft = reftype $self->backend;
-        if (! defined($reft)) { # SCALAR
+        my $reft = uc(ref($self->backend) || 'NA');
+        if ($reft eq 'NA') { # SCALAR
             ($class, $args) = ($self->backend, {});
         }
         elsif ($reft eq 'ARRAY') {
@@ -171,8 +170,8 @@ sub _normalize_routes {
     my $routes = [];
 
     if ($self->routes) {
-        my $reft = reftype $self->routes;
-        if (! defined($reft)) { # SCALAR
+        my $reft = uc(ref($self->routes) || 'NA');
+        if ($reft eq 'NA') { # SCALAR
             $routes = [ $self->routes ];
         }
         elsif ($reft eq 'REGEXP') {
@@ -253,7 +252,7 @@ sub _initialize_accesslist {
     my $list = Net::CIDR::Lite->new;
 
     if ($items) {
-        map { $list->add_any($_) } reftype($items) eq 'ARRAY' ? @$items : ( $items );
+        map { $list->add_any($_) } ref($items) eq 'ARRAY' ? @$items : ( $items );
     }
 
     $list;
