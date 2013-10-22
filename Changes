@@ -2,6 +2,8 @@ Revision history for Perl extension Plack::Middleware::Throttle::Lite.
 
 {{$NEXT}}
 
+0.05    Tue Oct 22 14:11:05 2013 +0000
+
     [ FEATURES ]
     - Changes file using sections now.
     - Github repo uses markdown README file instead of POD.
