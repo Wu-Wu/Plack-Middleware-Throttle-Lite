@@ -16,7 +16,7 @@ before_install:
     - "cpanm --mirror http://cpan.stratopan.com -q -n Test::Pod::Coverage"
 
 install:
-    - "dzil authordeps --missing | xargs cpanm --mirror http://cpan.stratopan.com -q -n && dzil listdeps --missing | xargs cpanm --mirror http://cpan.stratopan.com -q -n"
+    - "dzil authordeps --missing | xargs cpanm --mirror http://cpan.stratopan.com -q -n && dzil listdeps | xargs cpanm --mirror http://cpan.stratopan.com -q -n"
 
 script:
     - "dzil smoke --release --author"
