@@ -22,5 +22,5 @@ script:
     - "dzil smoke --release --author"
 
 after_success:
-    - "cpanm --mirror http://cpan.stratopan.com -q -n --skip-satisfied Dist::Zilla::App::Command::cover Devel::Cover::Report::Coveralls"
+    - "cpanm --mirror http://cpan.stratopan.com -q -n Dist::Zilla::App::Command::cover Devel::Cover::Report::Coveralls"
     - "dzil cover -report coveralls"
